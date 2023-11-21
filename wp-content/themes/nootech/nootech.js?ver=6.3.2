@@ -1,0 +1,83 @@
+(function($, window, undefined) {
+
+  window.DNA = (function() {
+
+    function track(data) {
+      var name = data && data.name;
+      if (!name) { name = 'Site Form'; }
+      window.dataLayer && window.dataLayer.push({'event' : 'formSubmitted', 'formName' : name});
+
+      window.fbq && window.fbq('track', 'Lead');
+    }
+
+    function setupGtmTracking() {
+
+      $(document).on('submit', function(e) {
+        console.log('submitted!', e);
+      });
+      $('form').on('submit:response', function(e) {
+        console.log('submit:response!', e);
+      });
+      $(document).on('submitResponse.gtmTracking', function(e, formData, jqForm, options){
+        console.log('gtm response submitted', e, formData, jqForm, options);
+        if ( formData && formData.success && !formData.errors ) {
+          if ( dataLayer ) {
+            if (formData.form_id == "1") {
+              dataLayer.push({'event' : 'formSubmitted', 'formName' : 'Contact Us'});
+            }
+          }
+        }
+        return true;
+      });
+    }
+
+    function openExternalLinks() {
+        $('a').each(function() {
+           var a = new RegExp('/' + window.location.host + '/');
+           if(!a.test(this.href)) {
+               $(this).click(function(event) {
+                   event.preventDefault();
+                   event.stopPropagation();
+                   window.open(this.href, '_blank');
+               });
+           }
+        });
+    }
+
+    function disableTotalBloat() {
+      $.fn.bxSlider = $.noop;
+      $.fn.owlCarousel = $.noop;
+      $.fn.nivoLightbox = $.noop;
+      $.fn.waypoint = $.noop;
+      $.fn.superfish = $.noop;
+      $.stellar = $.noop;
+    }
+
+    function init() {
+
+      $(".link--contact").click(function(e) {
+        e.preventDefault();
+        var $el = $("#contact-us");
+        if ($el.length) {
+          $('html, body').stop().animate({
+            scrollTop: ($el.offset().top-200)
+          }, 1000);
+        }
+      });
+
+      disableTotalBloat();
+        openExternalLinks();
+      // setupGtmTracking();
+    }
+
+    return {
+      init: init,
+      track: track,
+    };
+  })();
+
+  $(function() {
+    window.DNA.init();
+  });
+
+})(jQuery, window);
